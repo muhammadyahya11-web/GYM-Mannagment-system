@@ -1,0 +1,36 @@
+import express from "express";
+import dotenv from "dotenv";
+import connectDB from "./Config/Dbconfig.js";
+import userrouter from "./Router/UserRoutes.js";
+import cors from "cors";
+import ownerRouter from "./Owner/OwnerRouter.js";
+const app = express();
+
+//========================= dotenv config================
+dotenv.config();
+// ===============cors=======================
+app.use(
+  cors({
+    origin: "http://localhost:5173", 
+    credentials: true,
+    origin : true,
+  })
+);
+//===================== middleware=======================
+app.use(express.json());
+app.use("/api/user", userrouter);
+app.use("/api/user", ownerRouter); 
+
+//=============== test route================================
+app.get("/", (req, res) => {
+  res.send("Server is running...");
+});
+
+//============== connect database FIRST=====================
+connectDB();
+
+//================= start server===========================
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});

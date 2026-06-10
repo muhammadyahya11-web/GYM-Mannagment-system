@@ -1,0 +1,117 @@
+import bcrypt from "bcryptjs";
+import User from "../Model/UserModel.js";
+import { Owner } from "./OwnerModel.js"; // ✅ matches export
+
+// ----------------- Save Profile -----------------
+const SaveProfile = async (req, res) => {
+  try {
+    const { name, phone } = req.body;
+    const userId = req.user.id;
+
+    if (!name || !phone) {
+      return res.status(400).json({ message: "Name and phone are required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Prevent duplicate owner profile
+    const alreadyOwner = await Owner.findOne({ "profile.email": user.email });
+    if (alreadyOwner) return res.status(400).json({ message: "Owner profile already exists" });
+
+    const owner = await Owner.create({ // ✅ use Owner here
+      profile: {
+        name,
+        email: user.email,
+        phone,
+      },
+      security: {
+        password: user.password,
+      },
+    });
+
+    return res.status(201).json({ message: "Owner profile saved", owner });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// ----------------- Save Gym Info -----------------
+const saveGymInfo = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const { name, city, monthlyRange, gymAddress } = req.body;
+
+    if (!name || !city || !monthlyRange || !gymAddress) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const owner = await Owner.findOne({ "profile.email": userEmail });
+    if (!owner) return res.status(404).json({ message: "Owner profile not found" });
+
+    owner.gymInfo = {
+      gymName: name,
+      city,
+      membershipRangeMonths: monthlyRange,
+      gymAddress,
+    };
+
+    await owner.save();
+    return res.status(200).json({ message: "Gym information saved", owner });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// ----------------- Change Password -----------------
+const passwordChange = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    const owner = await Owner.findById(userId);
+    if (!owner) return res.status(404).json({ message: "Owner not found" });
+
+    const isMatch = await bcrypt.compare(currentPassword, owner.security.password);
+    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect" });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    owner.security.password = hashedPassword;
+    await owner.save();
+
+    return res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Password could not be updated", error: error.message });
+  }
+};
+
+// ----------------- Update Notifications -----------------
+const notification = async (req, res) => {
+  try {
+    const { paymentAlert, newMemberRegistration, monthlyReport } = req.body;
+    const userEmail = req.user.email;
+
+    const owner = await Owner.findOne({ "profile.email": userEmail });
+    if (!owner) return res.status(404).json({ message: "Owner profile not found" });
+
+    owner.notifications = {
+      paymentAlert: paymentAlert ?? owner.notifications.paymentAlert,
+      newMemberRegistration: newMemberRegistration ?? owner.notifications.newMemberRegistration,
+      monthlyReport: monthlyReport ?? owner.notifications.monthlyReport,
+    };
+
+    await owner.save();
+
+    return res.status(200).json({ message: "Notifications updated", owner });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export { SaveProfile, saveGymInfo, passwordChange, notification };
