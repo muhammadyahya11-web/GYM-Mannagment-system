@@ -8,14 +8,14 @@ const MainContextProvider = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // detect mobile initially
   const [user, setUser] = useState("");
-  const [tooken, settooken] = useState("");
+  const [token, settoken] = useState("");
   const [loading, setloading] = useState(false)
   const [email, setemail] = useState("")
 
 
   //===================== Detect mobile on resize=================
   useEffect(() => {
-    settooken(localStorage.getItem("tooken"))
+    settoken(localStorage.getItem("token"))
     setUser(localStorage.getItem("user"))
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -26,15 +26,15 @@ const MainContextProvider = ({ children }) => {
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  }, [tooken]);
+  }, [token]);
 
 // ===========================================================
 
  const  logout=()=>{
-  localStorage.removeItem("tooken")
+  localStorage.removeItem("token")
   localStorage.removeItem("user")
   setUser("")
-  settooken("")
+  settoken("")
  }
 // ===========================================================
 
@@ -47,8 +47,8 @@ const MainContextProvider = ({ children }) => {
         setIsMobile,
         user,
         setUser,
-        tooken,
-        settooken,
+        token,
+        settoken,
         loading, setloading,
         email, setemail ,
         logout,

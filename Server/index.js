@@ -5,6 +5,13 @@ import userrouter from "./Router/UserRoutes.js";
 import cors from "cors";
 import ownerRouter from "./Owner/OwnerRouter.js";
 const app = express();
+import gymrouter from "./Router/GymRoutes.js";
+import membershipPlansRoute from "./Router/MembershipRoutes.js";
+import trainerrouter from "./Router/TrainerRouter.js";
+import memberRouter from "./Router/MembersRouter.js";
+import AttendenceRouter from "./Router/AttendenceRouter.js";
+import paymentRouter from "./Router/PaymentRouter.js";
+
 
 //========================= dotenv config================
 dotenv.config();
@@ -20,6 +27,12 @@ app.use(
 app.use(express.json());
 app.use("/api/user", userrouter);
 app.use("/api/user", ownerRouter); 
+app.use("/api/gym", gymrouter);
+app.use("/api/plans",membershipPlansRoute );
+app.use("/api/trainer",trainerrouter );
+app.use("/api/member",memberRouter );
+app.use("/api/attendence",AttendenceRouter );
+app.use("/api/payment", paymentRouter);
 
 //=============== test route================================
 app.get("/", (req, res) => {

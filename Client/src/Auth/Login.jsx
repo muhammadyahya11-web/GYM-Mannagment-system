@@ -3,10 +3,10 @@ import { Dumbbell, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MainContext } from "../Maincontext/Context";
-
+import baseAPI from "../Config/Baseapi";
 function Login() {
   const nav = useNavigate();
-  const {settooken ,setUser } = useContext(MainContext)
+  const {settoken ,setUser } = useContext(MainContext)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -17,45 +17,41 @@ function Login() {
   const [error, setError] = useState("");
 
   // ================= LOGIN HANDLER =================
-  const loginHandler = async (e) => {
-    e.preventDefault();
-    setError("");
+const loginHandler = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    if (!formData.email || !formData.password) {
-      setError("Email and password are required");
-      return;
-    }
+  if (!formData.email || !formData.password) {
+    setError("Email and password are required");
+    return;
+  }
 
-    try {
-      setLoading(true);
-     console.log(formData);
-     const res = await axios.post(
-        "http://localhost:8000/api/user/login",
-        formData,
-        { withCredentials: true }
-      );
-    
+  try {
+    setLoading(true);
 
-      console.log("LOGIN SUCCESS:", res.data);
-      settooken(res.data.token)
-      localStorage.setItem("tooken", res.data.token)
-      localStorage.setItem("user", res.data.user.role)
-      setUser(res.data.user.role)
-      if (user === "client") {
-        nav("/user/dashboard");
-      }
-      if (user === "owner") {
-        nav("/owner/dashboard");
-      }
-      if (user === "trainer") {
-        nav("/trainer/dashboard");
-      }
-    } catch (err) {
-      setError(err?.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const res = await axios.post(
+      `${baseAPI}/api/user/login`,
+      formData,
+      { withCredentials: true }
+    );
+
+    console.log("LOGIN SUCCESS:", res.data);
+
+    const token = res.data.token;
+
+    settoken(token);
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", res.data.user.role);
+
+    setUser(res.data.user.role);
+
+    nav("/");
+  } catch (err) {
+    setError(err?.response?.data?.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex justify-center items-center text-white bg-[#0b0f1a]">

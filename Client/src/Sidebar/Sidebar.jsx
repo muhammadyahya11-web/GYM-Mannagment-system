@@ -18,6 +18,7 @@ export default function Sidebar() {
     setOpenItems((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
+  console.log(user)
 
 
 
@@ -37,7 +38,7 @@ export default function Sidebar() {
 
 
       <nav className="mt-6 space-y-2">
-        {SidebarConfig["user"].map((item) => {
+        {SidebarConfig[user].map((item) => {
           const Icon = iconMap[item.icon] || null;
 
           return (
@@ -81,7 +82,7 @@ export default function Sidebar() {
                     <Link
                       onClick={() => { setSidebarOpen(false) }}
                       key={child.label}
-                      to={child.path} // ✅ use child.path
+                      to={child.path} 
 
                     >
                       <div className="p-2 text-sm rounded-lg hover:bg-[#1b2440] cursor-pointer">

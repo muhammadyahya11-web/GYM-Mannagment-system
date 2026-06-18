@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MainContext } from "../Maincontext/Context";
 import googlelogo from "./../assets/googlelogo.png"
+import baseAPI from "../Config/Baseapi";
 function Register() {
   const { loading, setloading, email, setemail } = useContext(MainContext);
 
@@ -86,7 +87,7 @@ function Register() {
     // ================= API CALL =================
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/user/reg",
+      `${baseAPI}/api/user/reg`,
         regData,
         { withCredentials: true }
       );

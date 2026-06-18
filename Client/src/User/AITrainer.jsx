@@ -1,27 +1,43 @@
 import { Bot, Send, Dumbbell, Flame, Apple, Activity } from "lucide-react";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { MainContext } from "../Maincontext/Context";
+import Axios from "axios";
+import baseAPI from "../Config/Baseapi";
 
 export default function AITrainer() {
+  const { token } = useContext(MainContext);
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([
     {
       from: "ai",
-      text: "Welcome to FitPro AI Trainer 🤖💪. I can create workouts, diet plans, and fat‑loss strategies tailored just for you. Ask anything!",
+      text: "Welcome to FitPro AI Trainer 🤖💪. I can create workouts, diet plans, and fat-loss strategies tailored just for you. Ask anything!",
     },
   ]);
+  const [loading, setLoading] = useState(false);
 
-  const sendMessage = () => {
-    if (!message.trim()) return;
+  const sendMessage = async () => {
+    if (!message.trim() || !token) return;
 
-    setChat(prev => [
-      ...prev,
-      { from: "user", text: message },
-      {
-        from: "ai",
-        text: "Got it! Stay consistent, train smart, and focus on recovery. I’ll guide you step by step 💯",
-      },
-    ]);
+    const userMessage = message;
+    setChat(prev => [...prev, { from: "user", text: userMessage }]);
     setMessage("");
+    setLoading(true);
+
+    try {
+      const res = await Axios.post(`${baseAPI}/api/gym/ai-chat`, {
+        message: userMessage
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data.success) {
+        setChat(prev => [...prev, { from: "ai", text: res.data.reply }]);
+      }
+    } catch (err) {
+      setChat(prev => [...prev, { from: "ai", text: "Sorry, I couldn't process your request. Please try again." }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -79,12 +95,14 @@ export default function AITrainer() {
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Ask about workout, diet, fat loss..."
               className="flex-1 bg-[#0b0f1a] border border-white/10 rounded-xl px-4 py-3 text-sm outline-none"
             />
             <button
               onClick={sendMessage}
-              className="bg-purple-600 px-5 rounded-xl hover:bg-purple-700 flex items-center justify-center"
+              disabled={loading}
+              className="bg-purple-600 px-5 rounded-xl hover:bg-purple-700 flex items-center justify-center disabled:opacity-50"
             >
               <Send size={18} />
             </button>

@@ -4,7 +4,7 @@ export const SidebarConfig = {
     owner: [
         {
             label: "Dashboard",
-            path: "/owner/dashboard",
+            path: "/",
             icon: "dashboard",
         },
         {
@@ -49,7 +49,7 @@ export const SidebarConfig = {
             icon: "setting",
         },
     ],
-    user: [
+    client: [
         {
             label: "Dashboard",
             path: "/",

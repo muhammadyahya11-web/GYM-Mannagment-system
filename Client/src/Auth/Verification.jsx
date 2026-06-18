@@ -3,11 +3,12 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { MainContext } from "../Maincontext/Context";
+import baseAPI from "../Config/Baseapi";
 
 const OTP_LENGTH = 6;
 
 function OtpVerify() {
-  
+
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,13 +16,13 @@ function OtpVerify() {
 
   const inputsRef = useRef([]);
   const nav = useNavigate();
-  
-  const  { setemail ,email ,tooken, settooken, setUser ,} = useContext(MainContext)
+
+  const { setemail, email, token, settoken, setUser, } = useContext(MainContext)
 
   // ================= Timer =================
   useEffect(() => {
     if (timer === 0) return;
-    const interval = setInterval(() => setTimer((t) => t - 1), 10000);
+    const interval = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
   }, [timer]);
 
@@ -58,8 +59,8 @@ function OtpVerify() {
 
   // ================= Verify OTP =================
   const verifyOtpHandler = async (e) => {
-   
-   
+
+
     e.preventDefault();
     const otpCode = otp.join("");
 
@@ -69,33 +70,44 @@ function OtpVerify() {
     }
 
 
-    
-   
+
+
     try {
       setLoading(true);
-     const res = await axios.post("http://localhost:8000/api/user/verify", { email, otp : otpCode  });
-      settooken(res.data.token)
-         settooken(res.data.token)
-     localStorage.setItem("tooken" ,res.data.token )
-     localStorage.setItem("user" ,res.data.user.role )
+      const res = await axios.post(`${baseAPI}/api/user/verify`, { email, otp: otpCode, isReset: true, });
+      settoken(res.data.token)
+      localStorage.setItem("token", res.data.token)
+      localStorage.setItem("user", res.data.user.role)
+      localStorage.setItem("isReset", res.data.isReset)
       setUser(res.data.user.role)
-     if(user === "client"){
-       nav("/user/dashboard");
-     }
-      if(user === "owner"){
-       nav("/owner/dashboard");
-     }
-      if(user === "trainer"){
-       nav("/trainer/dashboard");
-     }
-      console.log(res.data);
-      
+      console.log("USER ROLE:", res.data);
+
+       {
+        if (res.data.isReset === true) {
+          console.log("Reset token received:", res.data.token);
+          if (res.data.token) {
+            nav(`/reset-password/${res.data.token}`);
+          } else {
+            setError("Reset token missing from server");
+          }
+          return;
+        }
+        else {
+          nav("/");
+        }
+
+      }
+
+     
+  
+
     } catch (err) {
       setError(err?.response?.data?.message || "Invalid or expired OTP");
     } finally {
       setLoading(false);
-     
-      localStorage.setItem("tooken" ,res.data.token )
+
+      localStorage.setItem("tooken", res.data.token)
+      console.log("data from server:", res.data);
       
     }
   };
@@ -103,7 +115,7 @@ function OtpVerify() {
   // ================= Resend OTP =================
   const resendOtp = async () => {
     try {
-      await axios.post("http://localhost:8000/api/user", { email });
+      await axios.post(`${baseAPI}/api/user/resendOtp`, { email });
       setTimer(60);
       setOtp(Array(OTP_LENGTH).fill(""));
       inputsRef.current[0].focus();

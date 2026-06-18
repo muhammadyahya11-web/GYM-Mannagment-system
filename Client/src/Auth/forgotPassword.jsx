@@ -3,11 +3,11 @@ import { Dumbbell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MainContext } from "../Maincontext/Context";
+import baseAPI from "../Config/Baseapi";
 
 function ForgotPassword() {
-  const { loading, setloading } = useContext(MainContext);
+  const { loading, setloading ,setemail ,email } = useContext(MainContext);
 
-  const [email, setemail] = useState("");
   const [error, seterror] = useState("");
   const [success, setsuccess] = useState("");
 
@@ -29,8 +29,8 @@ function ForgotPassword() {
     // ================= API CALL =================
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/user/forgot-password",
-        { email }
+       `${baseAPI}/api/user/forgotPassword`, 
+        { Email: email ,  }
       );
 
       setsuccess("Password reset link sent to your email");
@@ -38,7 +38,7 @@ function ForgotPassword() {
 
       // optional redirect
       setTimeout(() => {
-        nav("/login");
+        nav("/verify");
       }, 3000);
 
     } catch (err) {
@@ -67,7 +67,7 @@ function ForgotPassword() {
         </h1>
 
         <p className="text-gray-400 text-sm mt-2 text-center">
-          Enter your email to receive a reset link
+          Enter your email to receive a password reset otp
         </p>
 
         {/* FORM */}
